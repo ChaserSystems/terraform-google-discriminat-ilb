@@ -16,7 +16,7 @@ variable "region" {
 
 variable "zones_names" {
   type        = list(string)
-  description = "Speficic zones if you wish to override the default behaviour. If not overridden, defaults to all zones found in the specified region."
+  description = "Specific zones if you wish to override the default behaviour. If not overridden, defaults to all zones found in the specified region."
   default     = []
 }
 
