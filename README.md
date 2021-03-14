@@ -31,7 +31,7 @@
 * [Understand how to configure the enhanced Firewall Rules](https://chasersystems.com/discrimiNAT/gcp/quick-start/#v-firewall-rules) after deployment from our main documentation.
 * Contact our DevSecOps at devsecops@chasersystems.com for queries at any stage of your journey.
 
-## Post-deployment Security Group Example
+## Post-deployment Firewall Rule Example
 
 ```hcl
 resource "google_compute_firewall" "logging_google" {
