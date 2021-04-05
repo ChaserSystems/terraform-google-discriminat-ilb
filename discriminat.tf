@@ -64,7 +64,7 @@ data "google_compute_zones" "auto" {
 }
 
 data "google_compute_image" "discriminat" {
-  name    = "discriminat-2-0-3"
+  family  = "discriminat"
   project = "chasersystems-public"
 }
 
@@ -293,7 +293,7 @@ locals {
 
 output "opt_out_network_tag" {
   value       = "bypass-discriminat"
-  description = "The network tag for VMs needing to bypass discrimiNAT completely."
+  description = "The network tag for VMs needing to bypass discrimiNAT completely, such as bastion hosts. Such VMs should also have a Public IP."
 }
 
 ##

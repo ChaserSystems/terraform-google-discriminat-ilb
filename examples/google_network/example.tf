@@ -3,7 +3,7 @@ module "google_network" {
   version = "~> 3.1"
 
   network_name = "my-network"
-  project_id   = "my-nevermind-123456"
+  project_id   = "my-project-123456"
 
   subnets = [
     {
@@ -28,4 +28,9 @@ module "discriminat" {
   }
 
   depends_on = [module.google_network]
+}
+
+output "opt_out_network_tag" {
+  value       = module.discriminat["europe-west2/my-subnet"].opt_out_network_tag
+  description = "The network tag for VMs needing to bypass discrimiNAT completely, such as bastion hosts. Such VMs should also have a Public IP."
 }
