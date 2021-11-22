@@ -135,6 +135,8 @@ resource "google_compute_health_check" "discriminat" {
   http_health_check {
     port = 1042
   }
+
+  depends_on = [google_compute_firewall.discriminat-from-healthcheckers]
 }
 
 resource "google_compute_region_instance_group_manager" "discriminat" {
@@ -282,8 +284,16 @@ resource "google_compute_firewall" "discriminat-from-rest" {
 
 ## Locals
 
+resource "random_pet" "deployment_id" {
+  keepers = {
+    region          = var.region
+    subnetwork_name = var.subnetwork_name
+  }
+  length = 1
+}
+
 locals {
-  suffix = replace("${var.region}${var.subnetwork_name}", "/[aeiou-]/", "")
+  suffix = random_pet.deployment_id.id
 }
 
 locals {
@@ -302,11 +312,31 @@ locals {
 
 ##
 
+## Constraints
+
+terraform {
+  required_version = "> 1, < 2"
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "> 3, < 4"
+    }
+  }
+}
+
+##
+
 ## Outputs
 
 output "opt_out_network_tag" {
   value       = "bypass-discriminat"
   description = "The network tag for VMs needing to bypass discrimiNAT completely, such as bastion hosts. Such VMs should also have a Public IP."
+}
+
+output "deployment_id" {
+  value       = random_pet.deployment_id.id
+  description = "The unique identifier, forming a part of various resource names, for this deployment."
 }
 
 ##

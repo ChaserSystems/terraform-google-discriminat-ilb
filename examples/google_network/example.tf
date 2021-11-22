@@ -1,6 +1,6 @@
 module "google_network" {
   source  = "terraform-google-modules/network/google"
-  version = "~> 3.1"
+  version = "> 3, < 4"
 
   network_name = "my-network"
   project_id   = "my-project-123456"
@@ -33,4 +33,9 @@ module "discriminat" {
 output "opt_out_network_tag" {
   value       = module.discriminat["europe-west2/my-subnet"].opt_out_network_tag
   description = "The network tag for VMs needing to bypass discrimiNAT completely, such as bastion hosts. Such VMs should also have a Public IP."
+}
+
+output "deployment_id" {
+  value       = module.discriminat["europe-west2/my-subnet"].deployment_id
+  description = "The unique identifier, forming a part of various resource names, for this deployment."
 }
