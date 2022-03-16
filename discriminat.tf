@@ -1,5 +1,10 @@
 ## Inputs
 
+variable "project_id" {
+  type        = string
+  description = "The GCP Project ID for this deployment. For example: my-project-111222"
+}
+
 variable "subnetwork_name" {
   type        = string
   description = "The name of the subnetwork to deploy the discrimiNAT firewall instances in. This must already exist."
@@ -17,6 +22,12 @@ variable "region" {
 variable "zones_names" {
   type        = list(string)
   description = "Specific zones if you wish to override the default behaviour. If not overridden, defaults to all zones found in the specified region."
+  default     = []
+}
+
+variable "client_cidrs" {
+  type        = list(string)
+  description = "Additional CIDR blocks of clients which should be able to connect to, and hence route via, discrimiNAT instances."
   default     = []
 }
 
@@ -47,12 +58,24 @@ variable "block-project-ssh-keys" {
 variable "startup_script_base64" {
   type        = string
   description = "Strongly suggested to NOT run custom, startup scripts on the firewall instances. But if you had to, supply a base64 encoded version here."
-  default     = ""
+  default     = null
 }
 
 variable "custom_service_account_email" {
   type        = string
-  description = "Override with a specific, custom service account email in case support for features such as Shared VPC is needed. Default is to use the Google Compute Engine service account."
+  description = "Override with a specific, custom service account email in case support for architectures with Shared VPC and/or Serverless VPC Access is needed. Default is to use the Google Compute Engine service account."
+  default     = null
+}
+
+variable "image_project" {
+  type        = string
+  description = "Reserved for use with Chaser support. Allows overriding the source image project for discrimiNAT."
+  default     = null
+}
+
+variable "image_family" {
+  type        = string
+  description = "Reserved for use with Chaser support. Allows overriding the source image version for discrimiNAT."
   default     = null
 }
 
@@ -61,17 +84,19 @@ variable "custom_service_account_email" {
 ## Lookups
 
 data "google_compute_subnetwork" "context" {
-  name   = var.subnetwork_name
-  region = var.region
+  name    = var.subnetwork_name
+  region  = var.region
+  project = var.project_id
 }
 
 data "google_compute_zones" "auto" {
-  region = var.region
+  region  = var.region
+  project = var.project_id
 }
 
 data "google_compute_image" "discriminat" {
-  family  = "discriminat"
-  project = "chasersystems-public"
+  family  = var.image_family == null ? "discriminat" : var.image_family
+  project = var.image_project == null ? "chasersystems-public" : var.image_project
 }
 
 ##
@@ -84,13 +109,14 @@ resource "google_compute_instance_template" "discriminat" {
     create_before_destroy = true
   }
 
-  region = var.region
+  region  = var.region
+  project = var.project_id
 
   tags           = ["discriminat-itself"]
   machine_type   = var.machine_type
   can_ip_forward = true
 
-  metadata_startup_script = var.startup_script_base64 == "" ? null : base64decode(var.startup_script_base64)
+  metadata_startup_script = var.startup_script_base64 == null ? null : base64decode(var.startup_script_base64)
 
   metadata = {
     block-project-ssh-keys = var.block-project-ssh-keys
@@ -104,10 +130,8 @@ resource "google_compute_instance_template" "discriminat" {
   }
 
   network_interface {
-    subnetwork = var.subnetwork_name
-
-    access_config {
-    }
+    subnetwork         = var.subnetwork_name
+    subnetwork_project = var.project_id
   }
 
   shielded_instance_config {
@@ -118,7 +142,7 @@ resource "google_compute_instance_template" "discriminat" {
 
   service_account {
     email  = var.custom_service_account_email
-    scopes = (var.custom_service_account_email == null) ? ["compute-ro", "logging-write"] : ["cloud-platform"]
+    scopes = var.custom_service_account_email == null ? ["compute-rw", "logging-write"] : ["cloud-platform"]
   }
 
   labels = local.labels
@@ -126,6 +150,8 @@ resource "google_compute_instance_template" "discriminat" {
 
 resource "google_compute_health_check" "discriminat" {
   name = "discriminat-${local.suffix}"
+
+  project = var.project_id
 
   healthy_threshold   = 2
   unhealthy_threshold = 2
@@ -145,7 +171,8 @@ resource "google_compute_region_instance_group_manager" "discriminat" {
   distribution_policy_zones = local.zones
   target_size               = length(local.zones) * var.instances_per_zone
 
-  region = var.region
+  region  = var.region
+  project = var.project_id
 
   wait_for_instances = true
 
@@ -170,7 +197,8 @@ resource "google_compute_region_instance_group_manager" "discriminat" {
 resource "google_compute_region_backend_service" "discriminat" {
   name = "discriminat-${local.suffix}"
 
-  region = var.region
+  region  = var.region
+  project = var.project_id
 
   load_balancing_scheme = "INTERNAL"
   protocol              = "TCP"
@@ -188,7 +216,8 @@ resource "google_compute_region_backend_service" "discriminat" {
 resource "google_compute_forwarding_rule" "discriminat" {
   name = "discriminat-${local.suffix}"
 
-  region = var.region
+  region  = var.region
+  project = var.project_id
 
   load_balancing_scheme = "INTERNAL"
   ip_protocol           = "TCP"
@@ -203,7 +232,9 @@ resource "google_compute_forwarding_rule" "discriminat" {
 ## VPC
 
 resource "google_compute_route" "discriminat" {
-  name         = "discriminat-${local.suffix}"
+  name    = "discriminat-${local.suffix}"
+  project = var.project_id
+
   dest_range   = "0.0.0.0/0"
   network      = data.google_compute_subnetwork.context.network
   next_hop_ilb = google_compute_forwarding_rule.discriminat.id
@@ -211,7 +242,9 @@ resource "google_compute_route" "discriminat" {
 }
 
 resource "google_compute_route" "bypass_discriminat" {
-  name             = "bypass-discriminat-${local.suffix}"
+  name    = "bypass-discriminat-${local.suffix}"
+  project = var.project_id
+
   tags             = ["bypass-discriminat", "discriminat-itself"]
   dest_range       = "0.0.0.0/0"
   network          = data.google_compute_subnetwork.context.network
@@ -221,6 +254,8 @@ resource "google_compute_route" "bypass_discriminat" {
 
 resource "google_compute_firewall" "discriminat-to-internet" {
   name    = "discriminat-${local.suffix}-to-internet"
+  project = var.project_id
+
   network = data.google_compute_subnetwork.context.network
 
   direction = "EGRESS"
@@ -236,6 +271,8 @@ resource "google_compute_firewall" "discriminat-to-internet" {
 
 resource "google_compute_firewall" "discriminat-from-healthcheckers" {
   name    = "discriminat-${local.suffix}-from-healthcheckers"
+  project = var.project_id
+
   network = data.google_compute_subnetwork.context.network
 
   direction = "INGRESS"
@@ -252,13 +289,15 @@ resource "google_compute_firewall" "discriminat-from-healthcheckers" {
 
 resource "google_compute_firewall" "discriminat-from-clients" {
   name    = "discriminat-${local.suffix}-from-clients"
+  project = var.project_id
+
   network = data.google_compute_subnetwork.context.network
 
   direction = "INGRESS"
   priority  = 200
 
   target_tags   = ["discriminat-itself"]
-  source_ranges = [data.google_compute_subnetwork.context.ip_cidr_range]
+  source_ranges = concat([data.google_compute_subnetwork.context.ip_cidr_range], var.client_cidrs)
 
   allow {
     protocol = "tcp"
@@ -267,6 +306,8 @@ resource "google_compute_firewall" "discriminat-from-clients" {
 
 resource "google_compute_firewall" "discriminat-from-rest" {
   name    = "discriminat-${local.suffix}-from-rest"
+  project = var.project_id
+
   network = data.google_compute_subnetwork.context.network
 
   direction = "INGRESS"
@@ -319,6 +360,10 @@ terraform {
 
   required_providers {
     google = {
+      source  = "hashicorp/google"
+      version = "> 3, < 4"
+    }
+    google-beta = {
       source  = "hashicorp/google"
       version = "> 3, < 4"
     }
