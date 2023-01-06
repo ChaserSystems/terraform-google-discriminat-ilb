@@ -25,6 +25,12 @@ variable "zones_names" {
   default     = []
 }
 
+variable "only_route_tags" {
+  type        = list(string)
+  description = "Restrict automatically created default route (to the Internet) to VMs with these network tags only. Especially useful in the case of multiple, distinct DiscrimiNAT deployments in the same VPC Network, where each deployment caters to a subset of VMs in that network. For example, a VPC Network may span multiple regions and the default route for each region must be scoped to the DiscrimiNAT deployment of the same region. Default is to route all traffic regardless of any criteria via this deployment – which may clash with another such deployment's default route, and route egress traffic in a deterministic but most likely via a suboptimal gateway (DiscrimiNAT)."
+  default     = null
+}
+
 variable "client_cidrs" {
   type        = list(string)
   description = "Additional CIDR blocks of clients which should be able to connect to, and hence route via, discrimiNAT instances."
@@ -35,6 +41,12 @@ variable "labels" {
   type        = map(any)
   description = "Map of key-value label pairs to apply to resources created by this module. See examples for use."
   default     = {}
+}
+
+variable "custom_deployment_id" {
+  type        = string
+  description = "Override the randomly generated Deployment ID for this deployment. This is a unique identifier for this deployment that may help with naming, labelling and associating other objects (such as External IPs) to only this set of DiscrimiNAT instances – earmarking from other, parallel deployments."
+  default     = null
 }
 
 variable "machine_type" {
@@ -167,7 +179,7 @@ resource "google_compute_health_check" "discriminat" {
 
 resource "google_compute_region_instance_group_manager" "discriminat" {
   name                      = "discriminat-${local.suffix}"
-  base_instance_name        = "discriminat"
+  base_instance_name        = "discriminat-${local.suffix}"
   distribution_policy_zones = local.zones
   target_size               = length(local.zones) * var.instances_per_zone
 
@@ -239,6 +251,8 @@ resource "google_compute_route" "discriminat" {
   network      = data.google_compute_subnetwork.context.network
   next_hop_ilb = google_compute_forwarding_rule.discriminat.id
   priority     = 200
+
+  tags = var.only_route_tags
 }
 
 resource "google_compute_route" "bypass_discriminat" {
@@ -334,14 +348,15 @@ resource "random_pet" "deployment_id" {
 }
 
 locals {
-  suffix = random_pet.deployment_id.id
+  suffix = var.custom_deployment_id != null ? var.custom_deployment_id : random_pet.deployment_id.id
 }
 
 locals {
   labels = merge(
     {
       "product" : "discriminat",
-      "vendor" : "chasersystems_com"
+      "vendor" : "chasersystems_com",
+      "discriminat" : local.suffix
     },
     var.labels
   )
@@ -380,7 +395,7 @@ output "opt_out_network_tag" {
 }
 
 output "deployment_id" {
-  value       = random_pet.deployment_id.id
+  value       = local.suffix
   description = "The unique identifier, forming a part of various resource names, for this deployment."
 }
 

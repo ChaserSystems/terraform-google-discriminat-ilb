@@ -9,7 +9,10 @@ resource "google_compute_address" "nat_a" {
   project = var.project_id
 
   labels = {
-    "discriminat" = "some-comment"
+    # set the value of label 'discriminat' to custom_deployment_id as passed to
+    # the discriminat module if pinning this External IP to that particular
+    # fleet of DiscrimiNAT's is desired
+    "discriminat" = "some-comment_or_custom-deployment-id"
   }
 
   lifecycle {
@@ -28,7 +31,10 @@ resource "google_compute_address" "nat_b" {
   project = var.project_id
 
   labels = {
-    "discriminat" = "any-remark"
+    # set the value of label 'discriminat' to custom_deployment_id as passed to
+    # the discriminat module if pinning this External IP to that particular
+    # fleet of DiscrimiNAT's is desired
+    "discriminat" = "any-remark_or_custom-deployment-id"
   }
 
   lifecycle {
@@ -47,7 +53,10 @@ resource "google_compute_address" "nat_c" {
   project = var.project_id
 
   labels = {
-    "discriminat" = "whatsoever"
+    # set the value of label 'discriminat' to custom_deployment_id as passed to
+    # the discriminat module if pinning this External IP to that particular
+    # fleet of DiscrimiNAT's is desired
+    "discriminat" = "whatsoever_or_custom-deployment-id"
   }
 
   lifecycle {
