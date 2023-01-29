@@ -16,7 +16,7 @@ discrimiNAT enforces the use of contemporary encryption standards such as TLS 1.
 
 * Utilises Google's [Internal TCP/UDP load balancers as next hops](https://cloud.google.com/load-balancing/docs/internal/ilb-next-hop-overview) technology.
 * Provides rapid, seamless high-availability for the NAT and egress filtering function.
-* Can accommodate pre-allocated external IPs for use with the NAT function. Just label allocated External IPs with the key `discriminat` and any value.
+* Can accommodate pre-allocated external IPs for use with the NAT function. Just label allocated External IPs with the key `discriminat`.
 * The internal load balancer for discrimiNAT instances is set as the default route to the Internet for the entire VPC network.
 * Opt-out of this default routing is possible by tagging the VMs with `bypass-discriminat` network tag.
 * VMs _without_ public IPs will need firewall rules specifying what egress FQDNs and protocols are to be allowed. Default behaviour is to deny everything.
@@ -35,7 +35,7 @@ discrimiNAT enforces the use of contemporary encryption standards such as TLS 1.
 
 ## External IPs
 
-If a Public IP is not found attached to a discrimiNAT instance, it will look for any allocated but unassociated External IPs that have a label-key named `discriminat` (set to any value.) One of such External IPs will be attempted to be associated with itself then.
+If a Public IP is not found attached to a discrimiNAT instance, it will look for any allocated but unassociated External IPs that have a label-key named `discriminat` – the value which should be set to the value of the variable `custom_deployment_id` in this module, if that was set, else anything but blank. One of such External IPs will be attempted to be associated with itself then.
 
 >This allows you to have a stable set of static IPs to share with your partners, who may wish to allowlist/whitelist them.
 
