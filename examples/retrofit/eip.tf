@@ -9,9 +9,9 @@ resource "google_compute_address" "nat_a" {
   project = var.project_id
 
   labels = {
-    # set the value of label 'discriminat' to custom_deployment_id as passed to
+    # Set the value of label 'discriminat' to custom_deployment_id as passed to
     # the discriminat module if pinning this External IP to that particular
-    # fleet of DiscrimiNAT's is desired
+    # deployment of DiscrimiNAT is desired. Some (any) value must be present otherwise.
     "discriminat" = "some-comment_or_custom-deployment-id"
   }
 
@@ -31,9 +31,9 @@ resource "google_compute_address" "nat_b" {
   project = var.project_id
 
   labels = {
-    # set the value of label 'discriminat' to custom_deployment_id as passed to
+    # Set the value of label 'discriminat' to custom_deployment_id as passed to
     # the discriminat module if pinning this External IP to that particular
-    # fleet of DiscrimiNAT's is desired
+    # deployment of DiscrimiNAT is desired. Some (any) value must be present otherwise.
     "discriminat" = "any-remark_or_custom-deployment-id"
   }
 
@@ -53,9 +53,9 @@ resource "google_compute_address" "nat_c" {
   project = var.project_id
 
   labels = {
-    # set the value of label 'discriminat' to custom_deployment_id as passed to
+    # Set the value of label 'discriminat' to custom_deployment_id as passed to
     # the discriminat module if pinning this External IP to that particular
-    # fleet of DiscrimiNAT's is desired
+    # deployment of DiscrimiNAT is desired. Some (any) value must be present otherwise.
     "discriminat" = "whatsoever_or_custom-deployment-id"
   }
 

@@ -27,8 +27,6 @@ module "discriminat" {
   subnetwork_name = module.google_network.subnets["europe-west2/subnet-foo"].name
   region          = module.google_network.subnets["europe-west2/subnet-foo"].region
 
-  client_cidrs = ["10.11.12.0/28"]
-
   labels = {
     "x"   = "y"
     "foo" = "bar"
@@ -41,7 +39,7 @@ module "discriminat" {
 
 output "opt_out_network_tag" {
   value       = module.discriminat.opt_out_network_tag
-  description = "The network tag for VMs needing to bypass discrimiNAT completely, such as bastion hosts. Such VMs should also have a Public IP."
+  description = "The network tag for VMs needing to bypass DiscrimiNAT completely, such as bastion hosts. Such VMs should also have a Public IP."
 }
 
 output "deployment_id" {
