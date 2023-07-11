@@ -7,7 +7,7 @@ variable "project_id" {
 
 variable "subnetwork_name" {
   type        = string
-  description = "The name of the subnetwork to deploy the discrimiNAT firewall instances in. This must already exist."
+  description = "The name of the subnetwork to deploy the DiscrimiNAT Firewall instances in. This must already exist."
 }
 
 variable "region" {
@@ -33,8 +33,8 @@ variable "only_route_tags" {
 
 variable "client_cidrs" {
   type        = list(string)
-  description = "Additional CIDR blocks of clients which should be able to connect to, and hence route via, discrimiNAT instances."
-  default     = []
+  description = "Additional CIDR blocks of clients which should be able to connect to, and hence route via, DiscrimiNAT instances. Defaults to RFC1918 ranges."
+  default     = ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]
 }
 
 variable "labels" {
@@ -51,7 +51,7 @@ variable "custom_deployment_id" {
 
 variable "machine_type" {
   type        = string
-  description = "The default of e2-small should suffice for light to medium levels of usage. Anything less than 2 CPU cores and 2 GB of RAM is not recommended. For faster access to the Internet and for projects with a large number of VMs, you may want to choose a machine type with more CPU cores."
+  description = "The default of `e2-small` should suffice for light to medium levels of usage. Anything less than 2 CPU cores and 2 GB of RAM is not recommended. For faster access to the Internet and for projects with a large number of VMs, you may want to upgrade to `n2-highcpu-2` or `n2d-highcpu-2`."
   default     = "e2-small"
 }
 
@@ -81,13 +81,13 @@ variable "custom_service_account_email" {
 
 variable "image_project" {
   type        = string
-  description = "Reserved for use with Chaser support. Allows overriding the source image project for discrimiNAT."
+  description = "Reserved for use with Chaser support. Allows overriding the source image project for DiscrimiNAT."
   default     = null
 }
 
 variable "image_family" {
   type        = string
-  description = "Reserved for use with Chaser support. Allows overriding the source image version for discrimiNAT."
+  description = "Reserved for use with Chaser support. Allows overriding the source image version for DiscrimiNAT."
   default     = null
 }
 
@@ -391,7 +391,7 @@ terraform {
 
 output "opt_out_network_tag" {
   value       = "bypass-discriminat"
-  description = "The network tag for VMs needing to bypass discrimiNAT completely, such as bastion hosts. Such VMs should also have a Public IP."
+  description = "The network tag for VMs needing to bypass DiscrimiNAT completely, such as bastion hosts. Such VMs should also have a Public IP."
 }
 
 output "deployment_id" {

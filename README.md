@@ -1,32 +1,32 @@
-# discrimiNAT, ILB architecture
+# DiscrimiNAT, ILB architecture
 
-[discrimiNAT firewall](https://chasersystems.com/discriminat) for egress filtering by FQDNs on Google Cloud. Just specify the allowed destination hostnames in the respective applications' native Firewall Rules and the firewall will take care of the rest.
+[DiscrimiNAT Firewall](https://chasersystems.com/discriminat/) is a transparent, proxy-less solution to discover & filter egress traffic by FQDNs in a Shared VPC on Google Cloud. Just specify the allowed destination hostnames in the respective applications' native Firewall Rules and DiscrimiNAT will take care of the rest.
+
+[Watch our 3½ minute egress FQDN discovery video.](https://www.youtube.com/watch?v=Q0ntWv4bA1U)
 
 ![](https://chasersystems.com/img/gcp-protocol-tls.gif)
 
 **Architecture with internal TCP load balancers as next hops set as the default, and network tag based opt-out control.**
 
-[Demo Videos](https://chasersystems.com/discriminat/gcp/demo) | [discrimiNAT FAQ](https://chasersystems.com/discriminat/faq)
-
 ## Pentest Ready
 
-discrimiNAT enforces the use of contemporary encryption standards such as TLS 1.2+ and SSH v2 with bidirectional in-band checks. Anything older or insecure will be denied connection automatically. Also conducts out-of-band checks, such as DNS, for robust defence against sophisticated malware and insider threats. Gets your VPC ready for a proper pentest!
+DiscrimiNAT enforces the use of contemporary encryption standards such as TLS 1.2+ and SSH v2 with bidirectional in-band checks. Anything older or insecure will be denied connection automatically. Also conducts out-of-band checks, such as DNS, for robust defence against sophisticated malware and insider threats. Gets your VPC ready for a proper pentest!
 
 ## Highlights
 
 * Utilises Google's [Internal TCP/UDP load balancers as next hops](https://cloud.google.com/load-balancing/docs/internal/ilb-next-hop-overview) technology.
 * Provides rapid, seamless high-availability for the NAT and egress filtering function.
 * Can accommodate pre-allocated external IPs for use with the NAT function. Just label allocated External IPs with the key `discriminat`.
-* The internal load balancer for discrimiNAT instances is set as the default route to the Internet for the entire VPC network.
+* The internal load balancer for DiscrimiNAT instances is set as the default route to the Internet for the entire VPC network.
 * Opt-out of this default routing is possible by tagging the VMs with `bypass-discriminat` network tag.
 * VMs _without_ public IPs will need firewall rules specifying what egress FQDNs and protocols are to be allowed. Default behaviour is to deny everything.
 
 ## Considerations
 
 * The default route is available to the entire VPC network, but a regional restriction is enforced. More on that [here](https://cloud.google.com/load-balancing/docs/internal/ilb-next-hop-overview#same_network_and_region).
-* Only one deployment per network is advised, and GCP-managed Cloud NAT is not needed with discrimiNAT deployed.
+* Only one deployment per network is advised, and GCP-managed Cloud NAT is not needed with DiscrimiNAT deployed.
 * VMs _with_ public IPs will need the `bypass-discriminat` network tag in almost all cases.
-* You must be subscribed to the [discrimiNAT firewall from the Google Cloud Marketplace](https://console.cloud.google.com/marketplace/details/chasersystems-public/discriminat?utm_source=gthb&utm_medium=dcs&utm_campaign=trrfrm).
+* You must be subscribed to the [DiscrimiNAT Firewall from the Google Cloud Marketplace](https://console.cloud.google.com/marketplace/product/chasersystems-public/discriminat).
 * Network tag support for Internal TCP/UDP load balancers as next hops is [now Generally Available](https://cloud.google.com/load-balancing/docs/internal/ilb-next-hop-overview#additional_considerations). This may be used to turn egress filtering at default routing into an opt-in, rather than an opt-out, choice.
 
 ## Alternatives
@@ -35,21 +35,21 @@ discrimiNAT enforces the use of contemporary encryption standards such as TLS 1.
 
 ## External IPs
 
-If a Public IP is not found attached to a discrimiNAT instance, it will look for any allocated but unassociated External IPs that have a label-key named `discriminat` – the value which should be set to the value of the variable `custom_deployment_id` in this module, if that was set, else anything but blank. One of such External IPs will be attempted to be associated with itself then.
+If a Public IP is not found attached to a DiscrimiNAT instance, it will look for any allocated but unassociated External IPs that have a label-key named `discriminat` – the value which should be set to the value of the variable `custom_deployment_id` in this module, if that was set, else anything but blank. One of such External IPs will be attempted to be associated with itself then.
 
 >This allows you to have a stable set of static IPs to share with your partners, who may wish to allowlist/whitelist them.
 
-Private Google Access enabled on the subnet discrimiNAT is deployed in is needed for this mechanism to work though – since making the association needs access to the Compute API. In the [google_network example](examples/google_network/), this is demonstrated by setting `subnet_private_access = true`.
+Private Google Access enabled on the subnet DiscrimiNAT is deployed in is needed for this mechanism to work though – since making the association needs access to the Compute API. In the [google_network example](examples/google_network/), this is demonstrated by setting `subnet_private_access = true`.
 
 ## Next Steps
 
-* [Understand how to configure the enhanced Firewall Rules](https://chasersystems.com/docs/discriminat/gcp/config-ref) after deployment from our main documentation.
-* If using **Shared VPCs**, read [our guide](https://chasersystems.com/docs/discriminat/gcp/shared-vpc) on creating and overriding the service account needed for it.
+* [Understand how to configure the enhanced Firewall Rules](https://chasersystems.com/docs/discriminat/gcp/config-ref/) after deployment from our main documentation.
+* If using **Shared VPCs**, read [our guide](https://chasersystems.com/docs/discriminat/gcp/shared-vpc/) on creating and overriding the service account needed for it.
 * Contact our DevSecOps at devsecops@chasersystems.com for queries at any stage of your journey – even on the eve of a pentest!
 
 ## Discover
 
-Perhaps use the `see-thru` mode to discover what needs to be in the allowlist for an application, by monitoring its outbound network activity first. Follow our [building an allowlist from scratch](https://chasersystems.com/docs/discriminat/gcp/logs-ref#building-an-allowlist-from-scratch) recipe for use with StackDriver.
+Perhaps use the `see-thru` mode to discover what needs to be in the allowlist for an application, by monitoring its outbound network activity first. Follow our [building an allowlist from scratch](https://chasersystems.com/docs/discriminat/gcp/logs-ref/#building-an-allowlist-from-scratch-video-version) recipe for use with StackDriver.
 
 ![](https://chasersystems.com/img/gcp-see-thru.gif)
 
@@ -68,7 +68,7 @@ resource "google_compute_firewall" "logging_google" {
   # Tags of instances this Rule applies to, as usual.
   target_tags = ["foo"]
 
-  # The discrimiNAT firewall will apply its own checks anyway, so you could
+  # The DiscrimiNAT Firewall will apply its own checks anyway, so you could
   # choose to leave destination_ranges not defined without worry.
   # destination_ranges =
 
