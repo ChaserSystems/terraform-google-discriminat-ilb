@@ -194,7 +194,7 @@ resource "google_compute_region_instance_group_manager" "discriminat" {
 
   auto_healing_policies {
     health_check      = google_compute_health_check.discriminat.id
-    initial_delay_sec = 120
+    initial_delay_sec = 360
   }
 
   update_policy {
