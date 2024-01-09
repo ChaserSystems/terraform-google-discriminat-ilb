@@ -130,7 +130,7 @@ resource "google_compute_instance_template" "discriminat" {
 
   metadata = {
     block-project-ssh-keys = var.block-project-ssh-keys
-    user-data = var.user_data_base64 == null ? null : base64decode(var.user_data_base64)
+    user-data              = var.user_data_base64 == null ? null : base64decode(var.user_data_base64)
   }
 
   disk {
