@@ -15,6 +15,19 @@ variable "region" {
   description = "The region the specified subnetwork is to be found in."
 }
 
+variable "byol" {
+  type        = string
+  sensitive   = true
+  default     = null
+  description = "If using the BYOL version from the marketplace, supply the licence key as supplied by Chaser Systems here."
+}
+
+variable "ashr" {
+  type        = bool
+  default     = true
+  description = "Automated System Health Reporting. See note in README to learn more. Set to false to disable. Default is true and hence enabled."
+}
+
 ##
 
 ## Defaults
@@ -130,7 +143,7 @@ resource "google_compute_instance_template" "discriminat" {
 
   metadata = {
     block-project-ssh-keys = var.block-project-ssh-keys
-    user-data              = var.user_data_base64 == null ? null : base64decode(var.user_data_base64)
+    user-data              = var.user_data_base64 != null ? base64decode(var.user_data_base64) : local.cloud_config == "" ? null : local.cloud_config
   }
 
   disk {
@@ -363,6 +376,19 @@ locals {
 
 locals {
   zones = length(var.zones_names) > 0 ? var.zones_names : data.google_compute_zones.auto.names
+}
+
+locals {
+  cc_byol = var.byol == null ? "" : "- encoding: base64\n  path: /etc/chaser/licence-key.der\n  permissions: 0404\n  content: ${var.byol}\n"
+  cc_ashr = var.ashr == true ? "" : "- path: /etc/chaser/disable_automated-system-health-reporting\n  permissions: 0404\n"
+}
+
+locals {
+  cc_write_files = "${local.cc_byol}${local.cc_ashr}"
+}
+
+locals {
+  cloud_config = local.cc_write_files == "" ? "" : "#cloud-config\nwrite_files:\n${local.cc_write_files}"
 }
 
 ##
