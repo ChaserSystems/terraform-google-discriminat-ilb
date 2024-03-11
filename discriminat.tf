@@ -76,7 +76,7 @@ variable "instances_per_zone" {
 
 variable "mig_update_policy_type" {
   type        = string
-  description = "OPPORTUNISTIC or PROACTIVE. Set to OPPORTUNISTIC to prevent a `terraform apply` from initiating and waiting for a rolling update. This may be useful if DiscrimiNAT instances are set to use External IPs and there aren't any spare for new instances to attach to themselves (and warm up their cache before) being brought into service by the load balancer. This wouldn't be a problem if DiscrimiNAT instances are set to route through Google Cloud NAT, however. See the script `rmig-update-maxUnavailable-1.sh` to initiate a rolling update, one-by-one, if setting to OPPORTUNISTIC."
+  description = "OPPORTUNISTIC or PROACTIVE. Set to OPPORTUNISTIC to prevent a `terraform apply` from initiating and waiting for a rolling update. This may be useful if DiscrimiNAT instances are set to use External IPs and there aren't any spare for new instances to attach to themselves (and warm up their cache) before being brought into service by the load balancer. This wouldn't be a problem if DiscrimiNAT instances are set to route through Google Cloud NAT, however. See the script `rmig-update-maxUnavailable-1.sh` to initiate a rolling update, one-by-one, if setting to OPPORTUNISTIC."
   default     = "PROACTIVE"
 }
 
