@@ -74,6 +74,18 @@ variable "instances_per_zone" {
   default     = 1
 }
 
+variable "mig_update_policy_type" {
+  type        = string
+  description = "OPPORTUNISTIC or PROACTIVE. Set to OPPORTUNISTIC to prevent a `terraform apply` from initiating and waiting for a rolling update. This may be useful if DiscrimiNAT instances are set to use External IPs and there aren't any spare for new instances to attach to themselves (and warm up their cache) before being brought into service by the load balancer. This wouldn't be a problem if DiscrimiNAT instances are set to route through Google Cloud NAT, however. See the script `rmig-update-maxUnavailable-1.sh` to initiate a rolling update, one-by-one, if setting to OPPORTUNISTIC."
+  default     = "PROACTIVE"
+}
+
+variable "mig_target_size" {
+  type        = number
+  description = "If left unset, automatically sets to the number of zones_names * instances_per_zone."
+  default     = null
+}
+
 variable "block-project-ssh-keys" {
   type        = bool
   description = "Strongly suggested to leave this to the default, that is to NOT allow project-wide SSH keys to login into the firewall."
@@ -193,7 +205,7 @@ resource "google_compute_region_instance_group_manager" "discriminat" {
   name                      = "discriminat-${local.suffix}"
   base_instance_name        = "discriminat-${local.suffix}"
   distribution_policy_zones = local.zones
-  target_size               = length(local.zones) * var.instances_per_zone
+  target_size               = var.mig_target_size == null ? length(local.zones) * var.instances_per_zone : var.mig_target_size
 
   region  = var.region
   project = var.project_id
@@ -210,7 +222,7 @@ resource "google_compute_region_instance_group_manager" "discriminat" {
   }
 
   update_policy {
-    type                         = "PROACTIVE"
+    type                         = var.mig_update_policy_type
     instance_redistribution_type = "PROACTIVE"
     minimal_action               = "REPLACE"
     max_surge_fixed              = length(local.zones)
