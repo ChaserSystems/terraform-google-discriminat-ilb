@@ -34,6 +34,16 @@ module "discriminat" {
 
   zones_names = ["europe-west2-a", "europe-west2-b"] # delete or set to [] for all zones
 
+  # custom_service_account_email = "some-name@some-project.iam.gserviceaccount.com"
+
+  # preferences = <<EOF
+  # {
+  #   "%default": {
+  #     "flow_log_verbosity": "only_disallowed"
+  #   }
+  # }
+  #   EOF
+
   depends_on = [module.google_network]
 }
 
@@ -45,4 +55,9 @@ output "opt_out_network_tag" {
 output "deployment_id" {
   value       = module.discriminat.deployment_id
   description = "The unique identifier, forming a part of various resource names, for this deployment."
+}
+
+output "default_preferences" {
+  value       = module.discriminat.default_preferences
+  description = "The default preferences supplied to DiscrimiNAT. See docs at https://chasersystems.com/docs/discriminat/gcp/default-prefs/"
 }
