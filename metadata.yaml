@@ -1,0 +1,48 @@
+apiVersion: blueprints.cloud.google.com/v1alpha1
+kind: BlueprintMetadata
+metadata:
+  name: terraform-google-discriminat-ilb
+  annotations:
+    config.kubernetes.io/local-config: "true"
+spec:
+  info:
+    title: DiscrimiNAT, ILB architecture
+    source:
+      repo: https://github.com/ChaserSystems/terraform-google-discriminat-ilb.git
+      sourceType: git
+    description: { }
+  interfaces:
+    variables:
+      - name: custom_service_account_email
+        description: Different from the Deployment Service Account above, this is for DiscrimiNAT instances. Override with a specific, custom service account email in case support for architectures with Shared VPC and/or Serverless VPC Access is needed. Default is to use the Google Compute Engine service account. See docs at https://chasersystems.com/docs/discriminat/gcp/service-account/
+        varType: string
+      - name: machine_type
+        description: The default of `e2-small` should suffice for light to medium levels of usage. Anything less than 2 CPU cores and 2 GB of RAM is not recommended. For faster access to the Internet and for projects with a large number of VMs, you may want to upgrade to `n2-highcpu-2` or `n2d-highcpu-2`.
+        varType: string
+        defaultValue: e2-small
+      - name: project_id
+        varType: string
+        required: true
+      - name: subnetwork_name
+        description: The name of the subnetwork to deploy the DiscrimiNAT Firewall instance in. This must already exist.
+        varType: string
+        required: true
+      - name: region
+        description: The region the specified subnetwork is to be found in.
+        varType: string
+        required: true
+      - name: only_route_tags
+        description: Restrict automatically created default route (to the Internet) to VMs with these network tags only.
+        varType: list(string)
+      - name: gcp_mktplc_image_self_link
+        varType: string
+        defaultValue: projects/chasersystems-public/global/images/discriminat-2-9-0
+      - name: goog_cm_deployment_name
+        varType: string
+    outputs:
+      - name: default_preferences
+        description: The default preferences supplied to DiscrimiNAT. See docs at https://chasersystems.com/docs/discriminat/gcp/default-prefs/
+      - name: deployment_id
+        description: The unique identifier, forming a part of various resource names, for this deployment.
+      - name: opt_out_network_tag
+        description: The network tag for VMs needing to bypass DiscrimiNAT completely, such as bastion hosts. Such VMs should also have a Public IP.

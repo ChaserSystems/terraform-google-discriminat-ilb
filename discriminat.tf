@@ -53,7 +53,7 @@ variable "client_cidrs" {
 }
 
 variable "labels" {
-  type        = map(any)
+  type        = map(string)
   description = "Map of key-value label pairs to apply to resources created by this module. See examples for use."
   default     = {}
 }
@@ -145,6 +145,20 @@ variable "ashr" {
 
 ##
 
+## Variables for Google Marketplace internals
+
+variable "gcp_mktplc_image_self_link" {
+  type    = string
+  default = "projects/chasersystems-public/global/images/discriminat-2-9-0"
+}
+
+variable "goog_cm_deployment_name" {
+  type    = string
+  default = null
+}
+
+##
+
 ## Lookups
 
 data "google_compute_subnetwork" "context" {
@@ -206,7 +220,7 @@ resource "google_compute_instance_template" "discriminat" {
   }
 
   disk {
-    source_image = data.google_compute_image.discriminat.self_link
+    source_image = data.google_compute_image.discriminat.self_link == "projects/chasersystems-public/global/images/discriminat-2-9-0" ? data.google_compute_image.discriminat.self_link : var.gcp_mktplc_image_self_link
     disk_type    = "pd-ssd"
     auto_delete  = true
     boot         = true
@@ -420,7 +434,7 @@ resource "random_pet" "deployment_id" {
 }
 
 locals {
-  suffix = var.custom_deployment_id != null ? var.custom_deployment_id : random_pet.deployment_id.id
+  suffix = var.goog_cm_deployment_name != null ? var.goog_cm_deployment_name : var.custom_deployment_id != null ? var.custom_deployment_id : random_pet.deployment_id.id
 }
 
 locals {
@@ -461,10 +475,6 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "> 3, < 7"
-    }
-    google-beta = {
-      source  = "hashicorp/google-beta"
       version = "> 3, < 7"
     }
   }
