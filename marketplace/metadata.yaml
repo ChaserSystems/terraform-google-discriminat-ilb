@@ -24,7 +24,7 @@ spec:
         varType: string
         required: true
       - name: subnetwork_name
-        description: The name of the subnetwork to deploy the DiscrimiNAT Firewall instance in. This must already exist.
+        description: The name of the subnetwork to deploy the DiscrimiNAT Firewall instance in. This must already exist and have "Private Google Access" turned on.
         varType: string
         required: true
       - name: region
@@ -39,6 +39,8 @@ spec:
         defaultValue: projects/chasersystems-public/global/images/discriminat-2-9-0
       - name: goog_cm_deployment_name
         varType: string
+      - name: mig_target_size
+        defaultValue: 1
     outputs:
       - name: default_preferences
         description: The default preferences supplied to DiscrimiNAT. See docs at https://chasersystems.com/docs/discriminat/gcp/default-prefs/

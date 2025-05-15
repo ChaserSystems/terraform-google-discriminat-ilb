@@ -7,7 +7,7 @@ variable "project_id" {
 
 variable "subnetwork_name" {
   type        = string
-  description = "The name of the subnetwork to deploy the DiscrimiNAT Firewall instances in. This must already exist."
+  description = "The name of the subnetwork to deploy the DiscrimiNAT Firewall instances in. This must already exist and have \"Private Google Access\" turned on."
 }
 
 variable "region" {

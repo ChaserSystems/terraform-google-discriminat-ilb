@@ -1,6 +1,4 @@
 resource "google_compute_address" "nat_a" {
-  provider = google-beta
-
   name = "static-egress-ip-a"
 
   address_type = "EXTERNAL"
@@ -21,8 +19,6 @@ resource "google_compute_address" "nat_a" {
 }
 
 resource "google_compute_address" "nat_b" {
-  provider = google-beta
-
   name = "static-egress-ip-b"
 
   address_type = "EXTERNAL"
@@ -43,8 +39,6 @@ resource "google_compute_address" "nat_b" {
 }
 
 resource "google_compute_address" "nat_c" {
-  provider = google-beta
-
   name = "static-egress-ip-c"
 
   address_type = "EXTERNAL"
