@@ -148,13 +148,15 @@ variable "ashr" {
 ## Variables for Google Marketplace internals
 
 variable "gcp_mktplc_image_self_link" {
-  type    = string
-  default = "projects/chasersystems-public/global/images/discriminat-2-9-0"
+  type        = string
+  default     = "projects/chasersystems-public/global/images/discriminat-2-9-0"
+  description = "Variable for Google Marketplace internals. Do not change."
 }
 
 variable "goog_cm_deployment_name" {
-  type    = string
-  default = null
+  type        = string
+  default     = null
+  description = "Variable for Google Marketplace internals. Do not change."
 }
 
 ##
@@ -220,7 +222,7 @@ resource "google_compute_instance_template" "discriminat" {
   }
 
   disk {
-    source_image = data.google_compute_image.discriminat.self_link == "projects/chasersystems-public/global/images/discriminat-2-9-0" ? data.google_compute_image.discriminat.self_link : var.gcp_mktplc_image_self_link
+    source_image = var.gcp_mktplc_image_self_link != "projects/chasersystems-public/global/images/discriminat-2-9-0" ? var.gcp_mktplc_image_self_link : data.google_compute_image.discriminat.self_link
     disk_type    = "pd-ssd"
     auto_delete  = true
     boot         = true
