@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -o pipefail
 set -x
 
 version=$(echo 'var.image_version' | terraform console | tr -d '"')
