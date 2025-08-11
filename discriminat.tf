@@ -373,6 +373,24 @@ resource "google_compute_firewall" "discriminat-from-healthcheckers" {
   }
 }
 
+resource "google_compute_firewall" "discriminat-from-discriminats" {
+  name    = "discriminat-${local.suffix}-from-discriminats"
+  project = var.project_id
+
+  network = data.google_compute_subnetwork.context.network
+
+  direction = "INGRESS"
+  priority  = 200
+
+  source_tags = ["discriminat-itself"]
+  target_tags = ["discriminat-itself"]
+
+  allow {
+    protocol = "udp"
+    ports    = [1042]
+  }
+}
+
 resource "google_compute_firewall" "discriminat-from-clients" {
   name    = "discriminat-${local.suffix}-from-clients"
   project = var.project_id
