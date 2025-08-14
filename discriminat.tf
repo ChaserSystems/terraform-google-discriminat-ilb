@@ -46,6 +46,17 @@ variable "only_route_tags" {
   default     = null
 }
 
+variable "bypass_cidrs" {
+  type        = map(any)
+  description = "TODO"
+  default = {
+    google-grpc-direct-connectivity = {
+      cidr        = "34.126.0.0/18"
+      description = "https://cloud.google.com/storage/docs/direct-connectivity"
+    }
+  }
+}
+
 variable "client_cidrs" {
   type        = list(string)
   description = "Additional CIDR blocks of clients which should be able to connect to, and hence route via, DiscrimiNAT instances. Defaults to RFC1918 ranges."
@@ -325,6 +336,19 @@ resource "google_compute_route" "discriminat" {
   priority     = 200
 
   tags = var.only_route_tags
+}
+
+resource "google_compute_route" "bypass_cidrs" {
+  for_each = var.bypass_cidrs
+
+  name        = each.key
+  description = each.value.description
+  project     = var.project_id
+
+  dest_range       = each.value.cidr
+  network          = data.google_compute_subnetwork.context.network
+  next_hop_gateway = "default-internet-gateway"
+  priority         = 150
 }
 
 resource "google_compute_route" "bypass_discriminat" {
