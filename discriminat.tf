@@ -48,10 +48,10 @@ variable "only_route_tags" {
 
 variable "bypass_cidrs" {
   type        = map(any)
-  description = "TODO"
+  description = "Destination CIDRs that should be routed directly to the default internet gateway, thereby bypassing the default route via DiscrimiNAT. The routes for these destination CIDRs are created with a higher priority than the default route via DiscrimiNAT. For Private IP workloads to be able to connect to these destination ranges, they will need to have routing in place, which usually just works for Google Cloud operated Public IP CIDRs (with or without Cloud NAT in the VPC). Note that this is not a way to allow traffic via DiscrimiNAT."
   default = {
     google-grpc-direct-connectivity = {
-      cidr        = "34.126.0.0/18"
+      dest_range  = "34.126.0.0/18"
       description = "https://cloud.google.com/storage/docs/direct-connectivity"
     }
   }
@@ -345,7 +345,7 @@ resource "google_compute_route" "bypass_cidrs" {
   description = each.value.description
   project     = var.project_id
 
-  dest_range       = each.value.cidr
+  dest_range       = each.value.dest_range
   network          = data.google_compute_subnetwork.context.network
   next_hop_gateway = "default-internet-gateway"
   priority         = 150
