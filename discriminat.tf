@@ -50,7 +50,7 @@ variable "bypass_cidrs" {
   type        = map(any)
   description = "Destination CIDRs that should be routed directly to the default internet gateway, thereby bypassing the default route via DiscrimiNAT. The routes for these destination CIDRs are created with a higher priority than the default route via DiscrimiNAT. For Private IP workloads to be able to connect to these destination ranges, they will need to have routing in place, which usually just works for Google Cloud operated Public IP CIDRs (with or without Cloud NAT in the VPC). Note that this is not a way to allow traffic via DiscrimiNAT."
   default = {
-    google-grpc-direct-connectivity = {
+    gcp-grpc-direct-conn = {
       dest_range  = "34.126.0.0/18"
       description = "https://cloud.google.com/storage/docs/direct-connectivity"
     }
@@ -185,8 +185,14 @@ resource "google_secret_manager_secret" "preferences" {
   project = var.project_id
 
   replication {
-    auto {}
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
   }
+
+  labels = local.labels
 }
 
 resource "google_secret_manager_secret_version" "default" {
@@ -320,6 +326,8 @@ resource "google_compute_forwarding_rule" "discriminat" {
   subnetwork            = var.subnetwork_name
 
   backend_service = google_compute_region_backend_service.discriminat.id
+
+  labels = local.labels
 }
 
 ##
@@ -341,7 +349,7 @@ resource "google_compute_route" "discriminat" {
 resource "google_compute_route" "bypass_cidrs" {
   for_each = var.bypass_cidrs
 
-  name        = each.key
+  name        = "${local.suffix}-${each.key}-bypass"
   description = each.value.description
   project     = var.project_id
 
