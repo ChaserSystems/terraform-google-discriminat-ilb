@@ -17,13 +17,14 @@ module "discriminat" {
 
   # custom_service_account_email = "some-name@some-project.iam.gserviceaccount.com"
 
-  # preferences = <<EOF
-  # {
-  #   "%default": {
-  #     "flow_log_verbosity": "only_disallowed"
-  #   }
-  # }
-  #   EOF
+  preferences = <<EOF
+  {
+    "%default": {
+      "flow_log_verbosity": "full",
+      "see_thru": "2026-01-19"
+    }
+  }
+  EOF
 }
 
 output "opt_out_network_tag" {
