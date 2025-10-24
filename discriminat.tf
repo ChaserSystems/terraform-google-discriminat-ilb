@@ -46,6 +46,17 @@ variable "only_route_tags" {
   default     = null
 }
 
+variable "bypass_cidrs" {
+  type        = map(map(string))
+  description = "Destination CIDRs that should be routed directly to the default internet gateway, thereby bypassing the default route via DiscrimiNAT. The routes for these destination CIDRs are created with a higher priority than the default route via DiscrimiNAT. For Private IP workloads to be able to connect to these destination ranges, they will need to have routing in place, which usually just works for Google Cloud operated Public IP CIDRs (with or without Cloud NAT in the VPC). Note that this is not a way to allow traffic via DiscrimiNAT."
+  default = {
+    gcp-grpc-direct-conn = {
+      dest_range  = "34.126.0.0/18"
+      description = "https://cloud.google.com/storage/docs/direct-connectivity"
+    }
+  }
+}
+
 variable "client_cidrs" {
   type        = list(string)
   description = "Additional CIDR blocks of clients which should be able to connect to, and hence route via, DiscrimiNAT instances. Defaults to RFC1918 ranges."
@@ -121,7 +132,7 @@ variable "image_family" {
 variable "image_version" {
   type        = string
   description = "Reserved for use with Chaser support. Allows overriding the source image version for DiscrimiNAT."
-  default     = "2.9.0"
+  default     = "2.20"
 }
 
 variable "image_auto_update" {
@@ -149,7 +160,7 @@ variable "ashr" {
 
 variable "gcp_mktplc_image_self_link" {
   type        = string
-  default     = "projects/chasersystems-public/global/images/discriminat-2-9-0"
+  default     = "projects/chasersystems-public/global/images/discriminat-2-20"
   description = "Variable for Google Marketplace internals. Do not change."
 }
 
@@ -190,8 +201,14 @@ resource "google_secret_manager_secret" "preferences" {
   project = var.project_id
 
   replication {
-    auto {}
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
   }
+
+  labels = local.labels
 }
 
 resource "google_secret_manager_secret_version" "default" {
@@ -222,7 +239,7 @@ resource "google_compute_instance_template" "discriminat" {
   }
 
   disk {
-    source_image = var.gcp_mktplc_image_self_link != "projects/chasersystems-public/global/images/discriminat-2-9-0" ? var.gcp_mktplc_image_self_link : data.google_compute_image.discriminat.self_link
+    source_image = var.gcp_mktplc_image_self_link != "projects/chasersystems-public/global/images/discriminat-2-20" ? var.gcp_mktplc_image_self_link : data.google_compute_image.discriminat.self_link
     disk_type    = "pd-ssd"
     auto_delete  = true
     boot         = true
@@ -325,6 +342,8 @@ resource "google_compute_forwarding_rule" "discriminat" {
   subnetwork            = var.subnetwork_name
 
   backend_service = google_compute_region_backend_service.discriminat.id
+
+  labels = local.labels
 }
 
 ##
@@ -341,6 +360,19 @@ resource "google_compute_route" "discriminat" {
   priority     = 200
 
   tags = var.only_route_tags
+}
+
+resource "google_compute_route" "bypass_cidrs" {
+  for_each = var.bypass_cidrs
+
+  name        = "${local.suffix}-${each.key}-bypass"
+  description = each.value.description
+  project     = var.project_id
+
+  dest_range       = each.value.dest_range
+  network          = data.google_compute_subnetwork.context.network
+  next_hop_gateway = "default-internet-gateway"
+  priority         = 150
 }
 
 resource "google_compute_route" "bypass_discriminat" {
@@ -385,6 +417,24 @@ resource "google_compute_firewall" "discriminat-from-healthcheckers" {
 
   allow {
     protocol = "tcp"
+    ports    = [1042]
+  }
+}
+
+resource "google_compute_firewall" "discriminat-from-discriminats" {
+  name    = "discriminat-${local.suffix}-from-discriminats"
+  project = var.project_id
+
+  network = data.google_compute_subnetwork.context.network
+
+  direction = "INGRESS"
+  priority  = 200
+
+  source_tags = ["discriminat-itself"]
+  target_tags = ["discriminat-itself"]
+
+  allow {
+    protocol = "udp"
     ports    = [1042]
   }
 }
@@ -444,7 +494,8 @@ locals {
     {
       "product" : "discriminat",
       "vendor" : "chasersystems_com",
-      "discriminat" : local.suffix
+      "discriminat" : local.suffix,
+      "goog-partner-solution" : "isol_plb32_0014m00001k39ovqai_vqj2nlpx4j3y3ubjk2pxkpkeeiuvvemk"
     },
     var.labels
   )

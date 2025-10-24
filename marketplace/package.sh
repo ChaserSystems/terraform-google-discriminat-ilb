@@ -12,4 +12,11 @@ mkdir /tmp/gcp-discriminat-ilb_${version}_${build}
 cp discriminat.tf README.md /tmp/gcp-discriminat-ilb_${version}_${build}/
 cp marketplace/*.tf marketplace/*.tfvars marketplace/*.yaml /tmp/gcp-discriminat-ilb_${version}_${build}/
 
+mv /tmp/gcp-discriminat-ilb_${version}_${build}/discriminat.tf /tmp/gcp-discriminat-ilb_${version}_${build}/main.tf
+cat << EOF >> /tmp/gcp-discriminat-ilb_${version}_${build}/main.tf
+provider "google" {
+  project = var.project_id
+}
+EOF
+
 zip -j /tmp/gcp-discriminat-ilb_${version}_${build}.zip /tmp/gcp-discriminat-ilb_${version}_${build}/*
