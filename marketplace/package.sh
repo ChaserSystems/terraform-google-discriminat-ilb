@@ -2,7 +2,8 @@
 
 set -e
 set -o pipefail
-set -x
+set -u
+# set -x
 
 version=$(echo 'var.image_version' | terraform console | tr -d '"')
 build=$(date +%Y-%m-%d-%H-%M-%S)
