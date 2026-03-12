@@ -36,7 +36,7 @@ spec:
         varType: list(string)
       - name: gcp_mktplc_image_self_link
         varType: string
-        defaultValue: projects/chasersystems-public/global/images/discriminat-2-20
+        defaultValue: projects/chasersystems-public/global/images/discriminat-2-30
       - name: goog_cm_deployment_name
         varType: string
       - name: mig_target_size
