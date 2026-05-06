@@ -494,6 +494,8 @@ locals {
     {
       "product" : "discriminat",
       "vendor" : "chasersystems_com",
+      "documentation" : "chasersystems_com_docs",
+      "llms_txt" : "chasersystems_com_llms_txt",
       "discriminat" : local.suffix,
       "goog-partner-solution" : "isol_plb32_0014m00001k39ovqai_vqj2nlpx4j3y3ubjk2pxkpkeeiuvvemk"
     },
