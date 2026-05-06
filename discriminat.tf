@@ -208,7 +208,8 @@ resource "google_secret_manager_secret" "preferences" {
     }
   }
 
-  labels = local.labels
+  labels      = local.labels
+  annotations = local.metadata
 }
 
 resource "google_secret_manager_secret_version" "default" {
@@ -233,10 +234,14 @@ resource "google_compute_instance_template" "discriminat" {
   machine_type   = var.machine_type
   can_ip_forward = true
 
-  metadata = {
+  metadata = merge({
     block-project-ssh-keys = var.block-project-ssh-keys
     user-data              = var.user_data_base64 != null ? base64decode(var.user_data_base64) : local.cloud_config == "" ? null : local.cloud_config
-  }
+    }
+    ,
+    local.metadata
+  )
+
 
   disk {
     source_image = var.gcp_mktplc_image_self_link != "projects/chasersystems-public/global/images/discriminat-2-40" ? var.gcp_mktplc_image_self_link : data.google_compute_image.discriminat.self_link
@@ -501,6 +506,13 @@ locals {
     },
     var.labels
   )
+}
+
+locals {
+  metadata = {
+    "documentation" : "https://chasersystems.com/docs/",
+    "llms_txt" : "https://chasersystems.com/llms.txt",
+  }
 }
 
 locals {
