@@ -7,7 +7,7 @@ variable "project_id" {
 
 variable "subnetwork_name" {
   type        = string
-  description = "The name of the subnetwork to deploy the DiscrimiNAT Firewall instances in. This must already exist and have `Private Google Access` turned on."
+  description = "The name of the subnetwork to deploy DiscrimiNAT instances in. This must already exist and have `Private Google Access` turned on."
 }
 
 variable "region" {
@@ -99,6 +99,12 @@ variable "mig_target_size" {
   default     = null
 }
 
+variable "ilb_allow_global_access" {
+  type        = bool
+  description = "Whether to allow clients in other regions to access the internal load balancer. By default, access is limited to the DiscrimiNAT deployment region."
+  default     = false
+}
+
 variable "block-project-ssh-keys" {
   type        = bool
   description = "Strongly suggested to leave this to the default, that is to NOT allow project-wide SSH keys to login into the firewall."
@@ -132,7 +138,7 @@ variable "image_family" {
 variable "image_version" {
   type        = string
   description = "Reserved for use with Chaser support. Allows overriding the source image version for DiscrimiNAT."
-  default     = "2.40"
+  default     = "2.50"
 }
 
 variable "image_auto_update" {
@@ -160,7 +166,7 @@ variable "ashr" {
 
 variable "gcp_mktplc_image_self_link" {
   type        = string
-  default     = "projects/chasersystems-public/global/images/discriminat-2-40"
+  default     = "projects/chasersystems-public/global/images/discriminat-2-50"
   description = "Variable for Google Marketplace internals. Do not change."
 }
 
@@ -244,7 +250,7 @@ resource "google_compute_instance_template" "discriminat" {
 
 
   disk {
-    source_image = var.gcp_mktplc_image_self_link != "projects/chasersystems-public/global/images/discriminat-2-40" ? var.gcp_mktplc_image_self_link : data.google_compute_image.discriminat.self_link
+    source_image = var.gcp_mktplc_image_self_link != "projects/chasersystems-public/global/images/discriminat-2-50" ? var.gcp_mktplc_image_self_link : data.google_compute_image.discriminat.self_link
     disk_type    = "pd-ssd"
     auto_delete  = true
     boot         = true
@@ -342,6 +348,7 @@ resource "google_compute_forwarding_rule" "discriminat" {
   project = var.project_id
 
   load_balancing_scheme = "INTERNAL"
+  allow_global_access   = var.ilb_allow_global_access
   ip_protocol           = "TCP"
   all_ports             = true
   subnetwork            = var.subnetwork_name
