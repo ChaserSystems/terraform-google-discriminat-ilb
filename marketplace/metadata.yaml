@@ -24,7 +24,7 @@ spec:
         varType: string
         required: true
       - name: subnetwork_name
-        description: The name of the subnetwork to deploy the DiscrimiNAT Firewall instance in. This must already exist and have "Private Google Access" turned on.
+        description: The name of the subnetwork in which DiscrimiNAT instances will be deployed. This must already exist and have "Private Google Access" turned on.
         varType: string
         required: true
       - name: region
