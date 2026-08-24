@@ -81,6 +81,12 @@ variable "machine_type" {
   default     = "e2-small"
 }
 
+variable "disk_type" {
+  type        = string
+  description = "The default of `pd-ssd` should work with most machine types including `n2-`. `n4-` machine types only support `hyperdisk-balanced`, though, so the user may want to override it here."
+  default     = "pd-ssd"
+}
+
 variable "instances_per_zone" {
   type        = number
   description = "This can be set to a higher number if deployment is single-zone only, to achieve rapid high-availability. For multi-zone deployments, a higher number will only spread the load across more instances."
@@ -251,7 +257,7 @@ resource "google_compute_instance_template" "discriminat" {
 
   disk {
     source_image = var.gcp_mktplc_image_self_link != "projects/chasersystems-public/global/images/discriminat-2-50" ? var.gcp_mktplc_image_self_link : data.google_compute_image.discriminat.self_link
-    disk_type    = "pd-ssd"
+    disk_type    = var.disk_type
     auto_delete  = true
     boot         = true
   }
