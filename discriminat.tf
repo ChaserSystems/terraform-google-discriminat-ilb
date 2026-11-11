@@ -144,7 +144,7 @@ variable "image_family" {
 variable "image_version" {
   type        = string
   description = "Reserved for use with Chaser support. Allows overriding the source image version for DiscrimiNAT."
-  default     = "2.50"
+  default     = "2.60"
 }
 
 variable "image_auto_update" {
@@ -172,7 +172,7 @@ variable "ashr" {
 
 variable "gcp_mktplc_image_self_link" {
   type        = string
-  default     = "projects/chasersystems-public/global/images/discriminat-2-50"
+  default     = "projects/chasersystems-public/global/images/discriminat-2-60"
   description = "Variable for Google Marketplace internals. Do not change."
 }
 
@@ -256,7 +256,7 @@ resource "google_compute_instance_template" "discriminat" {
 
 
   disk {
-    source_image = var.gcp_mktplc_image_self_link != "projects/chasersystems-public/global/images/discriminat-2-50" ? var.gcp_mktplc_image_self_link : data.google_compute_image.discriminat.self_link
+    source_image = var.gcp_mktplc_image_self_link != "projects/chasersystems-public/global/images/discriminat-2-60" ? var.gcp_mktplc_image_self_link : data.google_compute_image.discriminat.self_link
     disk_type    = var.disk_type
     auto_delete  = true
     boot         = true
